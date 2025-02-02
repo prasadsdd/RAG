@@ -1,4 +1,4 @@
-IAM User = user >> create user >> go to policy >>( AmazonEC2ContainerRegistryFullAccess , AmazonEC2FullAccess ) give access to this policys.
+IAM User = user >> create user >> go to policy >>( AmazonBedrockFullAccess, AmazonEC2ContainerRegistryFullAccess , AmazonEC2FullAccess ) give access to this policys.
 user name >> Security Credentials >> create access key >> command Line Interface (CLI) >> i under >> next >> create access key >> download.csv >> done .
 
 
