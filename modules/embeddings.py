@@ -1,15 +1,18 @@
 from langchain.embeddings import BedrockEmbeddings
-from config import AWS_CONFIG
 import boto3
+from config import Config
 
-def get_bedrock_embeddings():
-    bedrock_client = boto3.client(
-        service_name="bedrock-runtime",
-        region_name=AWS_CONFIG["region_name"],
-        aws_access_key_id=AWS_CONFIG["aws_access_key_id"],
-        aws_secret_access_key=AWS_CONFIG["aws_secret_access_key"]
-    )
-    return BedrockEmbeddings(
-        model_id="amazon.titan-embed-image-v1",
-        client=bedrock_client
-    )
+def get_embeddings():
+    try:
+        bedrock_client = boto3.client(
+            service_name="bedrock-runtime",
+            region_name=Config.REGION_NAME,
+            aws_access_key_id=Config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=Config.AWS_SECRET_ACCESS_KEY,
+        )
+        return BedrockEmbeddings(
+            model_id="amazon.titan-embed-image-v1",
+            client=bedrock_client
+        )
+    except Exception as e:
+        raise RuntimeError(f"Embeddings initialization failed: {str(e)}")

@@ -1,15 +1,27 @@
 from langchain.vectorstores import FAISS
-from modules.embeddings import get_bedrock_embeddings
+from modules.embeddings import get_embeddings
+from config import Config
 
-def get_or_create_vectorstore():
-    embeddings = get_bedrock_embeddings()
+def get_vector_store(docs):
     try:
-        return FAISS.load_local("faiss_local", embeddings, allow_dangerous_deserialization=True)
-    except:
-        return FAISS.from_documents([], embeddings)
+        if not docs or len(docs) == 0:
+            raise ValueError("No documents provided for vector storage")
 
-def add_documents_to_store(vector_store, documents):
-    vector_store.add_documents(documents)
-
-def save_vectorstore(vector_store):
-    vector_store.save_local("faiss_local")
+        embeddings = get_embeddings()
+        
+        # Try loading existing index
+        try:
+            vectorstore = FAISS.load_local(
+                Config.FAISS_INDEX_PATH, 
+                embeddings,
+                allow_dangerous_deserialization=True
+            )
+            vectorstore.add_documents(docs)
+        except:
+            # Create new index if loading fails
+            vectorstore = FAISS.from_documents(docs, embeddings)
+        
+        vectorstore.save_local(Config.FAISS_INDEX_PATH)
+        return True
+    except Exception as e:
+        raise RuntimeError(f"Vector store error: {str(e)}")

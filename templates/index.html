@@ -2,87 +2,120 @@
 <html>
 <head>
     <title>RAG Application</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="/static/styles.css">
     <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>📚 End-to-End RAG using Bedrock</h1>
+        <h1>📚 RAG using Bedrock By Prasad.S.Dhumal</h1>
         
-        <lottie-player
-            src="https://assets8.lottiefiles.com/packages/lf20_fcfjwiyb.json"
-            background="transparent"
-            speed="1"
-            style="height: 150px;"
-            loop
-            autoplay>
-        </lottie-player>
-
-        <div class="upload-section">
-            <h2>📂 Upload PDF</h2>
-            <input type="file" id="pdfUpload" accept=".pdf">
-            <button onclick="uploadPDF()">Process PDF</button>
+        <div id="animation">
+            <lottie-player
+                src="https://assets8.lottiefiles.com/packages/lf20_fcfjwiyb.json"
+                background="transparent"
+                speed="1"
+                style="width: 200px; height: 200px;"
+                loop
+                autoplay>
+            </lottie-player>
         </div>
 
-        <div class="query-section">
-            <h2>🔍 Ask a Question</h2>
-            <input type="text" id="questionInput" placeholder="Enter your question...">
+        <div class="upload-section">
+            <input type="file" id="pdf-upload" accept=".pdf">
+            <button onclick="uploadPDF()">Store Vector</button>
+        </div>
+
+        <div class="question-section">
+            <input type="text" id="question-input" placeholder="🔍 Ask a question from the PDF file">
             <button onclick="askQuestion()">Get Answer</button>
-            <div id="answerContainer"></div>
+        </div>
+
+        <div id="answer-section" class="hidden">
+            <h3>🤖 Assistant Response</h3>
+            <div id="answer-text" class="answer-content"></div>
         </div>
     </div>
 
     <script>
-        async function uploadPDF() {
-            const fileInput = document.getElementById('pdfUpload');
-            const file = fileInput.files[0];
-            
-            const formData = new FormData();
-            formData.append('file', file);
+        function showError(message) {
+            alert('Error: ' + message);
+        }
 
+        function updateButton(button, text, disabled) {
+            button.disabled = disabled;
+            button.textContent = text;
+        }
+
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdf-upload');
+            const btn = document.querySelector('.upload-section button');
+            
             try {
-                const response = await fetch('/upload', {
+                if (!fileInput.files.length) {
+                    showError('Please select a PDF file');
+                    return;
+                }
+
+                updateButton(btn, 'Processing...', true);
+                
+                const formData = new FormData();
+                formData.append('file', fileInput.files[0]);
+
+                const response = await fetch('/', {
                     method: 'POST',
                     body: formData
                 });
-                
-                const result = await response.json();
-                if (response.ok) {
-                    alert(result.message);
-                } else {
-                    alert(result.error);
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Upload failed');
                 }
+
+                alert('PDF processed successfully');
             } catch (error) {
-                alert('Error uploading file');
+                showError(error.message);
+            } finally {
+                updateButton(btn, 'Store Vector', false);
+                fileInput.value = '';
             }
         }
 
         async function askQuestion() {
-            const question = document.getElementById('questionInput').value;
-            const answerContainer = document.getElementById('answerContainer');
+            const questionInput = document.getElementById('question-input');
+            const btn = document.querySelector('.question-section button');
+            const answerSection = document.getElementById('answer-section');
+            const answerText = document.getElementById('answer-text');
             
-            if (!question) {
-                alert('Please enter a question');
-                return;
-            }
-
             try {
-                const response = await fetch('/ask', {
+                const question = questionInput.value.trim();
+                if (!question) {
+                    showError('Please enter a question');
+                    return;
+                }
+
+                updateButton(btn, 'Processing...', true);
+                
+                const response = await fetch('/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: JSON.stringify({ question })
+                    body: `question=${encodeURIComponent(question)}`
                 });
-                
-                const result = await response.json();
-                if (response.ok) {
-                    answerContainer.innerHTML = `<h3>🤖 Assistant Response</h3><p>${result.answer}</p>`;
-                } else {
-                    answerContainer.innerHTML = `<p class="error">${result.error}</p>`;
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Answer failed');
                 }
+
+                const data = await response.json();
+                answerText.innerHTML = data.answer.replace(/\n/g, '<br>');
+                answerSection.classList.remove('hidden');
             } catch (error) {
-                answerContainer.innerHTML = '<p class="error">Error getting answer</p>';
+                showError(error.message);
+                answerSection.classList.add('hidden');
+            } finally {
+                updateButton(btn, 'Get Answer', false);
             }
         }
     </script>
