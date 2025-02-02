@@ -22,4 +22,3 @@ rag_project/
 │  
 └── .gitignore   
 
-tp
