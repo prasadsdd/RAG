@@ -1,0 +1,7 @@
+flask
+boto3
+langchain
+pypdf
+faiss-cpu
+python-dotenv
+requests

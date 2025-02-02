@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>RAG Application</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 End-to-End RAG using Bedrock</h1>
+        
+        <lottie-player
+            src="https://assets8.lottiefiles.com/packages/lf20_fcfjwiyb.json"
+            background="transparent"
+            speed="1"
+            style="height: 150px;"
+            loop
+            autoplay>
+        </lottie-player>
+
+        <div class="upload-section">
+            <h2>📂 Upload PDF</h2>
+            <input type="file" id="pdfUpload" accept=".pdf">
+            <button onclick="uploadPDF()">Process PDF</button>
+        </div>
+
+        <div class="query-section">
+            <h2>🔍 Ask a Question</h2>
+            <input type="text" id="questionInput" placeholder="Enter your question...">
+            <button onclick="askQuestion()">Get Answer</button>
+            <div id="answerContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        async function uploadPDF() {
+            const fileInput = document.getElementById('pdfUpload');
+            const file = fileInput.files[0];
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    alert(result.message);
+                } else {
+                    alert(result.error);
+                }
+            } catch (error) {
+                alert('Error uploading file');
+            }
+        }
+
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value;
+            const answerContainer = document.getElementById('answerContainer');
+            
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+
+            try {
+                const response = await fetch('/ask', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ question })
+                });
+                
+                const result = await response.json();
+                if (response.ok) {
+                    answerContainer.innerHTML = `<h3>🤖 Assistant Response</h3><p>${result.answer}</p>`;
+                } else {
+                    answerContainer.innerHTML = `<p class="error">${result.error}</p>`;
+                }
+            } catch (error) {
+                answerContainer.innerHTML = '<p class="error">Error getting answer</p>';
+            }
+        }
+    </script>
+</body>
+</html>
