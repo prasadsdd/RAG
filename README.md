@@ -1,4 +1,4 @@
-# RAG Application with AWS Bedrock
+# 🚀 End-to-End Retrieval-Augmented Generation (RAG) with Amazon Bedrock with Deloyment on AWS EC2.
 
 A Flask-based RAG application using AWS Bedrock for document question answering.
 
@@ -22,7 +22,7 @@ rag_project/
 │  
 └── .gitignore   
 
-# 🚀 End-to-End Retrieval-Augmented Generation (RAG) with Amazon Bedrock
+
 
 Build your own RAG application from scratch using **Amazon Bedrock**! This guide will walk you through setting up the environment, running the application, and containerizing it with Docker.
 
